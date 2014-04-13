@@ -53,11 +53,20 @@ f = logging.Formatter("%(asctime)s %(filename)s %(levelname)s %(message)s",
 log_handler.setFormatter(f)
 log.addHandler(log_handler)
 
+
+#TODO encapsulate duplicate caching in a class and remove globals
+commit_list = []
+commit_list_max = 1000
+
 def application(env, start_response):
-    start_response('200 OK', [('Content-Type', 'text/html')])
-    data_string = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
-    do_POST(data_string)
-    return ["OK"]
+    if env['REQUEST_METHOD'] != 'POST':
+	start_response('501 NOT IMPLEMENTED',[('Content-Type','text/html')])
+	return["Server supports POST only"]
+    else:
+    	start_response('200 OK', [('Content-Type', 'text/html')])
+	data_string = env['wsgi.input'].read(int(env['CONTENT_LENGTH']))
+	do_POST(data_string)
+	return ["OK"]
 
 def comment_to_trello(card_short_id, comment):
 	log.debug("Try comment on card #%d, [\n%s\n]" % (card_short_id, comment))
@@ -71,11 +80,27 @@ def comment_to_trello(card_short_id, comment):
 	card.addComments(comment)
 
 def do_POST(data_string):
+	global commit_list
+
 	log.debug('got post')
 	log.debug('gitlab connection should be closed now.')
 
 	#parse data
 	post = json.loads(data_string)
+
+	after = post['after']
+
+	#TODO refactor to more clearly communicate flow ie: remove return 0
+	if after in commit_list:
+ 	    print 'duplicate request'
+	    return 0
+        else:
+	    if len(commit_list) > commit_list_max:
+		commit_list.pop(0)
+	    commit_list.append(after)
+
+        print 'receiving branch ' + after
+
 	repo = post['repository']['name']
 	#got namespace
 	namespace = (urlsplit(post['repository']['homepage'])[2]).split('/')[1]
