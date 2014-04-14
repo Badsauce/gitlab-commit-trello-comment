@@ -1,12 +1,6 @@
 # Introduction
 
 gitlab-commit-trello-comment will monitor your gitlab commit with card number(like #234) and push a format comment to that card of your trello board.
-modified from gitlab-webhook-receiver project.
-
-gitlab-webhook-receiver is a wsgi application to receive http posts from gitlab and then
-pull the latest branches from a git repo.
-
-
 
 # License
 
@@ -29,6 +23,12 @@ Trello Token can be generated using ` https://trello.com/1/authorize?key=substit
 In gitlab, as admin, go to "Hooks" tab, create hook as: http://your.ip.goes.here:port 
 
 (3) Run The App With a WSGI Server
+-----------------------------
+
+(4) Format your commit
+-----------------------------
+
+When you commit to your gitlab repo include `#<card number>` ex. `#3` to push the commit to that trello card
 
 # Trouble getting it working?
 
